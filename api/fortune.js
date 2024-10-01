@@ -1,8 +1,17 @@
 const axios = require('axios');
 
 export default async function (req, res) {
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+        res.setHeader('Access-Control-Allow-Credentials', true);
+        res.setHeader('Access-Control-Allow-Origin', '*'); // Adjust this if you want to restrict to specific origins
+        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.status(200).end();
+        return;
+    }
+
     if (req.method === 'POST') {
-        // Parse the body to get the age, profession, etc.
         let body;
         try {
             body = JSON.parse(req.body);
@@ -36,12 +45,14 @@ export default async function (req, res) {
             );
 
             const fortune = response.data.choices[0].text.trim();
+            res.setHeader('Access-Control-Allow-Origin', '*'); // Allow cross-origin requests
             res.status(200).json({ fortune });
         } catch (error) {
             console.error('Error during API call:', error.response ? error.response.data : error.message);
             res.status(500).json({ error: 'Failed to generate fortune. Please check logs for more details.' });
         }
     } else {
+        res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Allow', ['POST']);
         res.status(405).end(`Method ${req.method} Not Allowed`);
     }
